@@ -27,6 +27,10 @@
     },
     "production": {
       "autoIncrement": true
+    },
+    "fork": {
+      "autoIncrement": true,
+      "env": { "BB_MOBILE_VARIANT": "fork" }
     }
   },
   "submit": {
@@ -43,6 +47,9 @@
         "ascApiKeyId": "XPRY95WQUJ",
         "ascApiKeyIssuerId": "4cd3d471-a7c3-4152-8d48-72fff4a226a8"
       }
+    },
+    "fork": {
+      "ios": { "appleTeamId": "SZBVKVY4W2" }
     }
   }
 }

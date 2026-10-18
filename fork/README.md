@@ -21,6 +21,8 @@ The plans live in the central specs store; each fork change names its plan.
 
 | File | Fork change | Edit and reason |
 | --- | --- | --- |
+| `apps/mobile/app.config.js` | `bb-fork-ios-background-audio` | One line: `BB_MOBILE_VARIANT=fork` hands the config to `apps/mobile/plugins/with-fork-variant.js`, which applies `fork/identity.json`. |
+| `apps/mobile/eas.json` | `bb-fork-ios-background-audio` | `fork` build and submit profiles, for TestFlight builds under the user's Apple team. |
 
 `bb-fork-ios-background-audio` keeps its commits cheap to move: at most 3 edited upstream files with at most 40 changed lines among them, new files only under `apps/mobile/` and `fork/`, and no changes to any `package.json`, `pnpm-lock.yaml`, or `packages/`.
 
@@ -53,6 +55,16 @@ The script fetches both release tags from `upstream`, creates `fork/v0.46.1` fro
 Push the new branch, make it the default, and rebuild the app when the bb server is upgraded to that release.
 
 ## Building and installing Postbeep
+
+The fork variant takes its name, bundle ID, URL scheme, Apple team, and Expo owner and project from `fork/identity.json`, and drops bb's universal links. Check what it resolves to with `BB_MOBILE_VARIANT=fork pnpm exec expo config --type public` in `apps/mobile`.
+
+The icon, `apps/mobile/assets/fork/icon.png`, is rendered from `fork/icon.html`:
+
+```sh
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
+  --force-device-scale-factor=1 --window-size=1024,1024 \
+  --screenshot=apps/mobile/assets/fork/icon.png "file://$PWD/fork/icon.html"
+```
 
 Builds run on EAS under the user's Expo account. From `apps/mobile`:
 

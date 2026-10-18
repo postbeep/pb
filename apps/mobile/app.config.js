@@ -3,6 +3,7 @@ const { resolve } = require("node:path");
 
 module.exports = ({ config }) => {
   const variant = process.env.BB_MOBILE_VARIANT ?? "production";
+  if (variant === "fork") return require("./plugins/with-fork-variant")(config);
   if (variant !== "production" && variant !== "dev") {
     throw new Error("BB_MOBILE_VARIANT must be production or dev");
   }
