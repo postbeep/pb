@@ -32,10 +32,10 @@ The plans live in the central specs store; each fork change names its plan.
 
 The audio background mode itself is set in `apps/mobile/plugins/with-fork-variant.js`, so it applies only to Postbeep.
 
-Each fork change keeps its commits cheap to move. None changes any `package.json`, `pnpm-lock.yaml`, or `packages/`, and new files go only under `apps/mobile/` and `fork/`. Their limits on edited upstream files:
+Each fork change keeps its commits cheap to move. None changes any `package.json`, `pnpm-lock.yaml`, or `packages/`, and new files go only under `apps/mobile/` and `fork/`. The one exception is `.github/README.md`, which GitHub shows on the repository page in place of upstream's `README.md`; it conflicts on a move only if upstream adds a file of that name. Their limits on edited upstream files:
 - `bb-fork-ios-background-audio`: at most 4 files, with at most 40 changed lines among them;
 - `bb-fork-ios-scheme-links`: only `+native-intent.tsx`, with at most 6 changed lines;
-- `bb-fork-postbeep-branding`: only `NotificationsSettingsScreen.tsx`, with at most 2 changed lines.
+- `bb-fork-postbeep-branding`: only `NotificationsSettingsScreen.tsx`, with at most 2 changed lines. Its one new file outside `apps/mobile/` and `fork/` is `.github/README.md`.
 
 ## Setting up a checkout
 
