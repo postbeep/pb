@@ -9,6 +9,7 @@ The plans live in the central specs store; each fork change names its plan.
 | Fork change | What it does |
 | --- | --- |
 | `bb-fork-ios-background-audio` | The Postbeep app identity, background audio, and a page marker for Talkback |
+| `bb-fork-ios-scheme-links` | `postbeep://` links open the same thread or screen as the matching `bb://` link |
 
 ## Branches and commits
 
@@ -24,10 +25,13 @@ The plans live in the central specs store; each fork change names its plan.
 | `apps/mobile/app.config.js` | `bb-fork-ios-background-audio` | One line: `BB_MOBILE_VARIANT=fork` hands the config to `apps/mobile/plugins/with-fork-variant.js`, which applies `fork/identity.json`. |
 | `apps/mobile/eas.json` | `bb-fork-ios-background-audio` | `fork` build and submit profiles, for TestFlight builds under the user's Apple team. |
 | `apps/mobile/src/screens/webview/ProfileWebViewScreen.tsx` | `bb-fork-ios-background-audio` | One import and one wrapped call: the injected bridge script is passed through `withForkMarker` (`fork-marker.ts`), which adds a frozen `window.bbFork = { backgroundAudio: true, version: 1 }` after the stock bridge. The handshake is unchanged. |
+| `apps/mobile/app/+native-intent.tsx` | `bb-fork-ios-scheme-links` | One import and one wrapped argument: every incoming link passes through `withAppScheme` (`src/lib/fork/app-scheme-link.ts`) before upstream resolves it. A link in the app's own scheme, `postbeep://`, becomes `bb://`, so upstream's link rules apply to it. With the stock scheme `bb`, nothing changes. |
 
 The audio background mode itself is set in `apps/mobile/plugins/with-fork-variant.js`, so it applies only to Postbeep.
 
-`bb-fork-ios-background-audio` keeps its commits cheap to move: at most 3 edited upstream files with at most 40 changed lines among them, new files only under `apps/mobile/` and `fork/`, and no changes to any `package.json`, `pnpm-lock.yaml`, or `packages/`.
+Each fork change keeps its commits cheap to move. None changes any `package.json`, `pnpm-lock.yaml`, or `packages/`, and new files go only under `apps/mobile/` and `fork/`. Their limits on edited upstream files:
+- `bb-fork-ios-background-audio`: at most 3 files, with at most 40 changed lines among them;
+- `bb-fork-ios-scheme-links`: only `+native-intent.tsx`, with at most 6 changed lines.
 
 ## Setting up a checkout
 
@@ -93,4 +97,4 @@ None of these belong in the repository:
 ## Known limitations
 
 - iOS only. The fork variant does not change the Android app.
-- Links that use the `postbeep://` scheme skip the app's own link handling in `src/lib/links/incoming-link.ts`, which recognizes only `bb://`, so thread links of that form do not reach the web view. Push notifications are not affected, since they carry the thread ID.
+- Links that bb's server, web app, or desktop app produce use `bb://`, and still open the App Store app. Postbeep does not claim `bb://`, because iOS picks arbitrarily between two apps with the same scheme.

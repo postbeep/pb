@@ -1,5 +1,6 @@
 import { waitForActiveConnection } from "@/app-shell/connector";
 import { e2eModeEnabled } from "@/app-shell/e2e";
+import { withAppScheme } from "@/lib/fork/app-scheme-link";
 import { addServerPathForLink } from "@/lib/links";
 import { getProfileStore } from "@/lib/native";
 import { resolveShellIncomingLink } from "@/lib/shell";
@@ -19,7 +20,7 @@ export async function redirectSystemPath({
       activeProfileId: snapshot.activeProfileId,
       developerRoutesEnabled: e2eModeEnabled,
     };
-    const resolution = resolveShellIncomingLink(path, context);
+    const resolution = resolveShellIncomingLink(withAppScheme(path), context);
     switch (resolution.kind) {
       case "passthrough":
         return path;
