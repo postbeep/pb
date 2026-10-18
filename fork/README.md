@@ -65,7 +65,7 @@ Push the new branch, make it the default, and rebuild the app when the bb server
 
 The fork variant takes its name, bundle ID, URL scheme, Apple team, and Expo owner and project from `fork/identity.json`, and drops bb's universal links. Check what it resolves to with `BB_MOBILE_VARIANT=fork pnpm exec expo config --type public` in `apps/mobile`.
 
-The icon, `apps/mobile/assets/fork/icon.png`, is rendered from `fork/icon.html`:
+The icon, `apps/mobile/assets/fork/icon.png`, is a cream "pb" on a terracotta field, rendered from `fork/icon.html`. That palette is not bb's black-on-white mark and not the app's system blue:
 
 ```sh
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
