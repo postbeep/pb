@@ -1,0 +1,11 @@
+{
+  "name": "Postbeep",
+  "slug": "postbeep",
+  "scheme": "postbeep",
+  "bundleIdentifier": "com.postbeep.bb",
+  "appleTeamId": "SZBVKVY4W2",
+  "expo": {
+    "owner": null,
+    "projectId": null
+  }
+}
