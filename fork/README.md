@@ -25,12 +25,13 @@ The plans live in the central specs store; each fork change names its plan.
 | `apps/mobile/app.config.js` | `bb-fork-ios-background-audio` | One line: `BB_MOBILE_VARIANT=fork` hands the config to `apps/mobile/plugins/with-fork-variant.js`, which applies `fork/identity.json`. |
 | `apps/mobile/eas.json` | `bb-fork-ios-background-audio` | `fork` build and submit profiles, for TestFlight builds under the user's Apple team. |
 | `apps/mobile/src/screens/webview/ProfileWebViewScreen.tsx` | `bb-fork-ios-background-audio` | One import and one wrapped call: the injected bridge script is passed through `withForkMarker` (`fork-marker.ts`), which adds a frozen `window.bbFork = { backgroundAudio: true, version: 1 }` after the stock bridge. The handshake is unchanged. |
+| `apps/mobile/src/app-shell/LaunchSplash.tsx` | `bb-fork-ios-background-audio` | The in-app splash overlay uses the Postbeep mark when the variant is `fork`. The stock light, dark, and dev marks stay as they are. |
 | `apps/mobile/app/+native-intent.tsx` | `bb-fork-ios-scheme-links` | One import and one wrapped argument: every incoming link passes through `withAppScheme` (`src/lib/fork/app-scheme-link.ts`) before upstream resolves it. A link in the app's own scheme, `postbeep://`, becomes `bb://`, so upstream's link rules apply to it. With the stock scheme `bb`, nothing changes. |
 
 The audio background mode itself is set in `apps/mobile/plugins/with-fork-variant.js`, so it applies only to Postbeep.
 
 Each fork change keeps its commits cheap to move. None changes any `package.json`, `pnpm-lock.yaml`, or `packages/`, and new files go only under `apps/mobile/` and `fork/`. Their limits on edited upstream files:
-- `bb-fork-ios-background-audio`: at most 3 files, with at most 40 changed lines among them;
+- `bb-fork-ios-background-audio`: at most 4 files, with at most 40 changed lines among them;
 - `bb-fork-ios-scheme-links`: only `+native-intent.tsx`, with at most 6 changed lines.
 
 ## Setting up a checkout
@@ -65,13 +66,15 @@ Push the new branch, make it the default, and rebuild the app when the bb server
 
 The fork variant takes its name, bundle ID, URL scheme, Apple team, and Expo owner and project from `fork/identity.json`, and drops bb's universal links. Check what it resolves to with `BB_MOBILE_VARIANT=fork pnpm exec expo config --type public` in `apps/mobile`.
 
-The icon, `apps/mobile/assets/fork/icon.png`, is a cream "pb" on a terracotta field, rendered from `fork/icon.html`. That palette is not bb's black-on-white mark and not the app's system blue:
+The icon, `apps/mobile/assets/fork/icon.png`, is a cream "pb" on a terracotta field, rendered from `fork/icon.html`. That palette is not bb's black-on-white mark and not the app's system blue.
 
 ```sh
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
   --force-device-scale-factor=1 --window-size=1024,1024 \
   --screenshot=apps/mobile/assets/fork/icon.png "file://$PWD/fork/icon.html"
 ```
+
+The launch splash uses the same letters. `fork/splash.html` draws them on a transparent field; `apps/mobile/assets/fork/splash-logo.png` is those letters cropped with 24px of padding. The screen behind them is `#c2410c`, in both light and dark. The native splash is set in `with-fork-variant.js`, and the in-app overlay follows it.
 
 Builds run on EAS under the user's Expo account. From `apps/mobile`:
 

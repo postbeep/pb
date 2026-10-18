@@ -4,6 +4,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
+import {
+  FORK_SPLASH_BACKGROUND,
+  FORK_SPLASH_IMAGE,
+  FORK_SPLASH_LOGO_WIDTH,
+} from "./splash";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MOBILE_ROOT = join(HERE, "..", "..", "..");
@@ -56,7 +61,7 @@ function readIdentity(): z.infer<typeof identitySchema> {
   return identitySchema.parse(raw);
 }
 
-function resolveConfig(variant: string | undefined): ResolvedConfig {
+function resolveRaw(variant: string | undefined): unknown {
   const configure = requireFromHere(
     join(MOBILE_ROOT, "app.config.js"),
   ) as (input: { config: unknown }) => unknown;
@@ -67,11 +72,44 @@ function resolveConfig(variant: string | undefined): ResolvedConfig {
   if (variant === undefined) delete process.env.BB_MOBILE_VARIANT;
   else process.env.BB_MOBILE_VARIANT = variant;
   try {
-    return resolvedConfigSchema.parse(configure({ config: appJson.expo }));
+    return configure({ config: appJson.expo });
   } finally {
     if (previous === undefined) delete process.env.BB_MOBILE_VARIANT;
     else process.env.BB_MOBILE_VARIANT = previous;
   }
+}
+
+function resolveConfig(variant: string | undefined): ResolvedConfig {
+  return resolvedConfigSchema.parse(resolveRaw(variant));
+}
+
+const splashPluginSchema = z.tuple([
+  z.literal("expo-splash-screen"),
+  z.object({
+    image: z.string(),
+    imageWidth: z.number(),
+    backgroundColor: z.string(),
+    dark: z.object({
+      image: z.string(),
+      backgroundColor: z.string(),
+    }),
+    android: z
+      .object({
+        backgroundColor: z.string().optional(),
+        dark: z.object({ backgroundColor: z.string() }).optional(),
+      })
+      .optional(),
+  }),
+]);
+
+function splashPlugin(variant: string | undefined) {
+  const plugins = z
+    .object({ plugins: z.array(z.unknown()) })
+    .parse(resolveRaw(variant)).plugins;
+  const splash = plugins.find(
+    (plugin) => Array.isArray(plugin) && plugin[0] === "expo-splash-screen",
+  );
+  return splashPluginSchema.parse(splash)[1];
 }
 
 function readPngHeader(relativePath: string): {
@@ -173,6 +211,42 @@ describe("fork app variant", () => {
       bundleIdentifier: "app.getbb.mobile",
       variant: "dev",
     });
+  });
+
+  it("puts the pb mark on the fork splash and leaves the stock splashes", () => {
+    const fork = splashPlugin("fork");
+    expect(fork).toMatchObject({
+      image: FORK_SPLASH_IMAGE,
+      imageWidth: FORK_SPLASH_LOGO_WIDTH,
+      backgroundColor: FORK_SPLASH_BACKGROUND,
+      dark: {
+        image: FORK_SPLASH_IMAGE,
+        backgroundColor: FORK_SPLASH_BACKGROUND,
+      },
+      android: {
+        backgroundColor: FORK_SPLASH_BACKGROUND,
+        dark: { backgroundColor: FORK_SPLASH_BACKGROUND },
+      },
+    });
+    expect(splashPlugin("production")).toMatchObject({
+      image: "./assets/splash-logo.png",
+      imageWidth: 88,
+      backgroundColor: "#ffffff",
+      dark: {
+        image: "./assets/splash-logo-dark.png",
+        backgroundColor: "#000000",
+      },
+      android: { dark: { backgroundColor: "#151515" } },
+    });
+    expect(splashPlugin("dev")).toMatchObject({
+      image: "./assets/splash-logo-dev.png",
+      backgroundColor: "#ffffff",
+      dark: {
+        image: "./assets/splash-logo-dev.png",
+        backgroundColor: "#000000",
+      },
+    });
+    expect(splashPlugin(undefined)).toEqual(splashPlugin("production"));
   });
 
   it("still rejects an unknown variant", () => {

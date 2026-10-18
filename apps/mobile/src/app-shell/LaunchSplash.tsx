@@ -12,6 +12,8 @@ import {
 import splashLogo from "../../assets/splash-logo.png";
 import splashLogoDark from "../../assets/splash-logo-dark.png";
 import splashLogoDev from "../../assets/splash-logo-dev.png";
+import splashLogoFork from "../../assets/fork/splash-logo.png";
+import { forkSplash } from "@/lib/fork/splash";
 
 const LAUNCH_SPLASH_MAX_MS = 8000;
 const LAUNCH_SPLASH_FADE_MS = 250;
@@ -28,6 +30,10 @@ const launchArt =
         logo: isDevApp ? splashLogoDev : splashLogoDark,
       }
     : { background: "#ffffff", logo: isDevApp ? splashLogoDev : splashLogo };
+const splash =
+  Constants.expoConfig?.extra?.bbMobileVariant === "fork"
+    ? forkSplash(splashLogoFork)
+    : { ...launchArt, width: LOGO_WIDTH, height: LOGO_HEIGHT };
 
 let revealed = false;
 const listeners = new Set<() => void>();
@@ -91,17 +97,17 @@ export function LaunchSplash() {
       style={[
         StyleSheet.absoluteFill,
         styles.cover,
-        { backgroundColor: launchArt.background, opacity },
+        { backgroundColor: splash.background, opacity },
       ]}
       testID="launch-splash"
     >
       <Image
-        source={launchArt.logo}
+        source={splash.logo}
         onLoadEnd={hideNativeSplash}
         resizeMode="contain"
         style={{
-          width: LOGO_WIDTH,
-          height: LOGO_HEIGHT,
+          width: splash.width,
+          height: splash.height,
         }}
       />
     </Animated.View>
