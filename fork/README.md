@@ -10,6 +10,7 @@ The plans live in the central specs store; each fork change names its plan.
 | --- | --- |
 | `bb-fork-ios-background-audio` | The Postbeep app identity, background audio, and a page marker for Talkback |
 | `bb-fork-ios-scheme-links` | `postbeep://` links open the same thread or screen as the matching `bb://` link |
+| `bb-fork-postbeep-branding` | The app's and the repository's own name where they still said bb |
 
 ## Branches and commits
 
@@ -27,12 +28,14 @@ The plans live in the central specs store; each fork change names its plan.
 | `apps/mobile/src/screens/webview/ProfileWebViewScreen.tsx` | `bb-fork-ios-background-audio` | One import and one wrapped call: the injected bridge script is passed through `withForkMarker` (`fork-marker.ts`), which adds a frozen `window.bbFork = { backgroundAudio: true, version: 1 }` after the stock bridge. The handshake is unchanged. |
 | `apps/mobile/src/app-shell/LaunchSplash.tsx` | `bb-fork-ios-background-audio` | The in-app splash overlay uses the Postbeep mark when the variant is `fork`. The stock light, dark, and dev marks stay as they are. |
 | `apps/mobile/app/+native-intent.tsx` | `bb-fork-ios-scheme-links` | One import and one wrapped argument: every incoming link passes through `withAppScheme` (`src/lib/fork/app-scheme-link.ts`) before upstream resolves it. A link in the app's own scheme, `postbeep://`, becomes `bb://`, so upstream's link rules apply to it. With the stock scheme `bb`, nothing changes. |
+| `apps/mobile/src/screens/settings/NotificationsSettingsScreen.tsx` | `bb-fork-postbeep-branding` | One line: the push permission prompt says "pb will ask this phone for permission, then register it with …" instead of "bb will ask…". There is no build setting for in-app text, so the source line itself changes. If a bb release changes this line or the lines around it, the move stops on this file; see below. |
 
 The audio background mode itself is set in `apps/mobile/plugins/with-fork-variant.js`, so it applies only to Postbeep.
 
 Each fork change keeps its commits cheap to move. None changes any `package.json`, `pnpm-lock.yaml`, or `packages/`, and new files go only under `apps/mobile/` and `fork/`. Their limits on edited upstream files:
 - `bb-fork-ios-background-audio`: at most 4 files, with at most 40 changed lines among them;
-- `bb-fork-ios-scheme-links`: only `+native-intent.tsx`, with at most 6 changed lines.
+- `bb-fork-ios-scheme-links`: only `+native-intent.tsx`, with at most 6 changed lines;
+- `bb-fork-postbeep-branding`: only `NotificationsSettingsScreen.tsx`, with at most 2 changed lines.
 
 ## Setting up a checkout
 
@@ -59,6 +62,12 @@ The script fetches both release tags from `upstream`, creates `fork/v0.46.1` fro
 - `--branch <name>` picks another name for the new branch, for trial runs.
 - `--only <change>` moves just one fork change's commits. This works only for a change that applies to the bare release tag. A change that builds on another, as `bb-fork-ios-scheme-links` builds on `bb-fork-ios-background-audio` through this README, stops with a conflict; a full move prints its footprint instead.
 - `--no-checks` skips the install and checks.
+
+If the move stops on `NotificationsSettingsScreen.tsx`, a bb release has changed the push permission prompt. Resolve it by hand in favor of the fork's wording, for example for `desktop-v0.46.1`:
+1. `git switch -c fork/v0.46.1 desktop-v0.46.1`, then `git cherry-pick desktop-v0.46.0..fork/v0.46.0`.
+2. In the conflicting file, keep "pb will ask this phone for permission, then register it with …", and take upstream's other changes.
+3. `git add apps/mobile/src/screens/settings/NotificationsSettingsScreen.tsx`, then `git cherry-pick --continue`.
+4. Run `corepack pnpm install --frozen-lockfile` and `pnpm exec turbo run typecheck lint test --filter=@bb/mobile`.
 
 Push the new branch, make it the default, and rebuild the app when the bb server is upgraded to that release.
 
