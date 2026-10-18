@@ -126,6 +126,13 @@ describe("fork app variant", () => {
     expect(fork.scheme).not.toBe(production.scheme);
   });
 
+  it("adds the audio background mode and keeps remote notifications", () => {
+    expect(resolveConfig("fork").ios.infoPlist.UIBackgroundModes).toEqual([
+      "remote-notification",
+      "audio",
+    ]);
+  });
+
   it("uses its own opaque 1024x1024 icon", () => {
     const production = resolveConfig(undefined);
     const fork = resolveConfig("fork");

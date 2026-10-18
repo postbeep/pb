@@ -18,6 +18,12 @@ module.exports = function withForkVariant(config) {
       ...ios,
       bundleIdentifier: identity.bundleIdentifier,
       appleTeamId: identity.appleTeamId,
+      infoPlist: {
+        ...ios.infoPlist,
+        UIBackgroundModes: [
+          ...new Set([...(ios.infoPlist?.UIBackgroundModes ?? []), "audio"]),
+        ],
+      },
     },
     extra: identity.expo.projectId
       ? { ...extra, eas: { projectId: identity.expo.projectId } }

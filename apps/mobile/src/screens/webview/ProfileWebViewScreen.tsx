@@ -23,6 +23,7 @@ import {
 import { AppState, BackHandler, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebViewKeyboardFrame } from "./WebViewKeyboardFrame";
+import { withForkMarker } from "./fork-marker";
 import { WebView, type WebViewProps } from "react-native-webview";
 import { revealApp, useProfiles } from "@/app-shell";
 import { nativeSessionCache } from "@/lib/native";
@@ -332,8 +333,8 @@ export function ProfileWebViewScreen() {
         automaticallyAdjustContentInsets={false}
         contentInsetAdjustmentBehavior="never"
         webviewDebuggingEnabled={__DEV__}
-        injectedJavaScriptBeforeContentLoaded={buildBridgeInjectionScript(
-          handshake,
+        injectedJavaScriptBeforeContentLoaded={withForkMarker(
+          buildBridgeInjectionScript(handshake),
         )}
         onMessage={(event) => {
           canGoBack.current = event.nativeEvent.canGoBack;

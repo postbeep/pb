@@ -23,6 +23,9 @@ The plans live in the central specs store; each fork change names its plan.
 | --- | --- | --- |
 | `apps/mobile/app.config.js` | `bb-fork-ios-background-audio` | One line: `BB_MOBILE_VARIANT=fork` hands the config to `apps/mobile/plugins/with-fork-variant.js`, which applies `fork/identity.json`. |
 | `apps/mobile/eas.json` | `bb-fork-ios-background-audio` | `fork` build and submit profiles, for TestFlight builds under the user's Apple team. |
+| `apps/mobile/src/screens/webview/ProfileWebViewScreen.tsx` | `bb-fork-ios-background-audio` | One import and one wrapped call: the injected bridge script is passed through `withForkMarker` (`fork-marker.ts`), which adds a frozen `window.bbFork = { backgroundAudio: true, version: 1 }` after the stock bridge. The handshake is unchanged. |
+
+The audio background mode itself is set in `apps/mobile/plugins/with-fork-variant.js`, so it applies only to Postbeep.
 
 `bb-fork-ios-background-audio` keeps its commits cheap to move: at most 3 edited upstream files with at most 40 changed lines among them, new files only under `apps/mobile/` and `fork/`, and no changes to any `package.json`, `pnpm-lock.yaml`, or `packages/`.
 
