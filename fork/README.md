@@ -56,7 +56,7 @@ The script fetches both release tags from `upstream`, creates `fork/v0.46.1` fro
 
 - On a conflict it removes the new branch, names the conflicting files, and exits 1. The current branch is never changed.
 - `--branch <name>` picks another name for the new branch, for trial runs.
-- `--only <change>` moves just one fork change's commits.
+- `--only <change>` moves just one fork change's commits. This works only for a change that applies to the bare release tag. A change that builds on another, as `bb-fork-ios-scheme-links` builds on `bb-fork-ios-background-audio` through this README, stops with a conflict; a full move prints its footprint instead.
 - `--no-checks` skips the install and checks.
 
 Push the new branch, make it the default, and rebuild the app when the bb server is upgraded to that release.
