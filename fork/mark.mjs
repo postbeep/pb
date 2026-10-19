@@ -188,7 +188,7 @@ export function oklchToHex(L, C, h) {
 }
 
 export const palette = {
-  hue: 40,
+  hue: 150,
   light: {
     back: [
       [0.72, 0.14],
@@ -232,7 +232,7 @@ export function markSvg(
   const open = standalone
     ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" role="img" aria-labelledby="title desc">
   <title id="title">pb</title>
-  <desc id="desc">Postbeep's pb mark: two interwoven terracotta surfaces with a continuous directional gradient, in the construction of bb's mark.</desc>`
+  <desc id="desc">Postbeep's pb mark: two interwoven green surfaces with a continuous directional gradient, in the construction of bb's mark.</desc>`
     : "";
   const body = `
   <defs>

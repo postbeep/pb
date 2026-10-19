@@ -11,7 +11,7 @@ The plans live in the central specs store; each fork change names its plan.
 | `bb-fork-ios-background-audio` | The Postbeep app identity, background audio, and a page marker for Talkback |
 | `bb-fork-ios-scheme-links` | `postbeep://` links open the same thread or screen as the matching `bb://` link |
 | `bb-fork-postbeep-branding` | The app's and the repository's own name where they still said bb |
-| `bb-fork-postbeep-mark` | The pb mark, drawn in bb's construction in the fork's terracotta, on the icon, the launch splash, and desktop icon files |
+| `bb-fork-postbeep-mark` | The pb mark, drawn in bb's construction in the fork's emerald green, on the icon, the launch splash, and desktop icon files |
 
 ## Branches and commits
 
@@ -90,7 +90,7 @@ The build goes to TestFlight internal testing. TestFlight builds expire after 90
 
 ## The pb mark
 
-Postbeep's mark is the letters pb, built the way bb's mark is: the same letter shapes, two surfaces that pass over and under each other, one gradient from the upper left to the lower right, a bevel, and a shadow where one surface crosses the other. Where bb's mark is black, Postbeep's is terracotta. `fork/mark.mjs` holds the drawing and renders every file from it:
+Postbeep's mark is the letters pb, built the way bb's mark is: the same letter shapes, two surfaces that pass over and under each other, one gradient from the upper left to the lower right, a bevel, and a shadow where one surface crosses the other. Where bb's mark is black, Postbeep's is emerald green. `fork/mark.mjs` holds the drawing and renders every file from it:
 
 ```sh
 node fork/mark.mjs
@@ -106,12 +106,12 @@ node fork/mark.mjs
 
 The script uses the repository's `sharp`, from `apps/app`, and `iconutil` for the `.icns`, which is therefore only written on macOS.
 
-The colors are one hue, 40° in OKLCH, in five steps along the gradient:
+The colors are one hue, 150° in OKLCH, in five steps along the gradient:
 
 | Field | Steps, upper left to lower right |
 | --- | --- |
-| Light, on white | `#ed835e` `#dd5a27` `#b63e03` `#842b02` `#5e1d01` |
-| Dark, on black | `#feb79e` `#ff8d65` `#ed6531` `#cd4805` `#a43701` |
+| Light, on white | `#5bbd74` `#02a54b` `#03823a` `#035d28` `#01421a` |
+| Dark, on black | `#8fe1a1` `#61cb7c` `#14b254` `#079343` `#057434` |
 
 The splash fields are bb's: white in the light appearance, black in the dark, and `#151515` on Android in the dark. The mark shows 97 points wide, which is bb's 88-point mark at the same scale, plus the descender. `with-fork-variant.js` sets the native splash, and the in-app overlay in `LaunchSplash.tsx` follows it.
 
