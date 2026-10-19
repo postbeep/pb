@@ -11,6 +11,7 @@ The plans live in the central specs store; each fork change names its plan.
 | `bb-fork-ios-background-audio` | The Postbeep app identity, background audio, and a page marker for Talkback |
 | `bb-fork-ios-scheme-links` | `postbeep://` links open the same thread or screen as the matching `bb://` link |
 | `bb-fork-postbeep-branding` | The app's and the repository's own name where they still said bb |
+| `bb-fork-postbeep-mark` | The pb mark, drawn in bb's construction in the fork's terracotta, on the icon, the launch splash, and desktop icon files |
 
 ## Branches and commits
 
@@ -26,7 +27,7 @@ The plans live in the central specs store; each fork change names its plan.
 | `apps/mobile/app.config.js` | `bb-fork-ios-background-audio` | One line: `BB_MOBILE_VARIANT=fork` hands the config to `apps/mobile/plugins/with-fork-variant.js`, which applies `fork/identity.json`. |
 | `apps/mobile/eas.json` | `bb-fork-ios-background-audio` | `fork` build and submit profiles, for TestFlight builds under the user's Apple team. |
 | `apps/mobile/src/screens/webview/ProfileWebViewScreen.tsx` | `bb-fork-ios-background-audio` | One import and one wrapped call: the injected bridge script is passed through `withForkMarker` (`fork-marker.ts`), which adds a frozen `window.bbFork = { backgroundAudio: true, version: 1 }` after the stock bridge. The handshake is unchanged. |
-| `apps/mobile/src/app-shell/LaunchSplash.tsx` | `bb-fork-ios-background-audio` | The in-app splash overlay uses the Postbeep mark when the variant is `fork`. The stock light, dark, and dev marks stay as they are. |
+| `apps/mobile/src/app-shell/LaunchSplash.tsx` | `bb-fork-ios-background-audio`, `bb-fork-postbeep-mark` | The in-app splash overlay uses the Postbeep mark when the variant is `fork`, in its light or dark form for the phone's appearance. The stock light, dark, and dev marks stay as they are. |
 | `apps/mobile/app/+native-intent.tsx` | `bb-fork-ios-scheme-links` | One import and one wrapped argument: every incoming link passes through `withAppScheme` (`src/lib/fork/app-scheme-link.ts`) before upstream resolves it. A link in the app's own scheme, `postbeep://`, becomes `bb://`, so upstream's link rules apply to it. With the stock scheme `bb`, nothing changes. |
 | `apps/mobile/src/screens/settings/NotificationsSettingsScreen.tsx` | `bb-fork-postbeep-branding` | One line: the push permission prompt says "pb will ask this phone for permission, then register it with …" instead of "bb will ask…". There is no build setting for in-app text, so the source line itself changes. If a bb release changes this line or the lines around it, the move stops on this file; see below. |
 
@@ -36,6 +37,7 @@ Each fork change keeps its commits cheap to move. None changes any `package.json
 - `bb-fork-ios-background-audio`: at most 4 files, with at most 40 changed lines among them;
 - `bb-fork-ios-scheme-links`: only `+native-intent.tsx`, with at most 6 changed lines;
 - `bb-fork-postbeep-branding`: only `NotificationsSettingsScreen.tsx`, with at most 2 changed lines. Its one new file outside `apps/mobile/` and `fork/` is `.github/README.md`.
+- `bb-fork-postbeep-mark`: only `LaunchSplash.tsx`, with at most 6 changed lines, on top of `bb-fork-ios-background-audio`'s edit of that file.
 
 ## Setting up a checkout
 
@@ -75,15 +77,7 @@ Push the new branch, make it the default, and rebuild the app when the bb server
 
 The fork variant takes its name, bundle ID, URL scheme, Apple team, and Expo owner and project from `fork/identity.json`, and drops bb's universal links. Check what it resolves to with `BB_MOBILE_VARIANT=fork pnpm exec expo config --type public` in `apps/mobile`.
 
-The icon, `apps/mobile/assets/fork/icon.png`, is a cream "pb" on a terracotta field, rendered from `fork/icon.html`. That palette is not bb's black-on-white mark and not the app's system blue.
-
-```sh
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
-  --force-device-scale-factor=1 --window-size=1024,1024 \
-  --screenshot=apps/mobile/assets/fork/icon.png "file://$PWD/fork/icon.html"
-```
-
-The launch splash uses the same letters. `fork/splash.html` draws them on a transparent field; `apps/mobile/assets/fork/splash-logo.png` is those letters cropped with 24px of padding. The screen behind them is `#c2410c`, in both light and dark. The native splash is set in `with-fork-variant.js`, and the in-app overlay follows it.
+The icon and the launch splash show the pb mark, described in its own section below.
 
 Builds run on EAS under the user's Expo account. From `apps/mobile`:
 
@@ -93,6 +87,33 @@ pnpm exec eas submit -p ios --profile fork --latest
 ```
 
 The build goes to TestFlight internal testing. TestFlight builds expire after 90 days, so rebuild at least that often, and whenever the bb server moves to a new release.
+
+## The pb mark
+
+Postbeep's mark is the letters pb, built the way bb's mark is: the same letter shapes, two surfaces that pass over and under each other, one gradient from the upper left to the lower right, a bevel, and a shadow where one surface crosses the other. Where bb's mark is black, Postbeep's is terracotta. `fork/mark.mjs` holds the drawing and renders every file from it:
+
+```sh
+node fork/mark.mjs
+```
+
+| File | What it is |
+| --- | --- |
+| `fork/mark.svg`, `fork/mark-dark.svg` | The mark as vectors, for a light and a dark field |
+| `apps/mobile/assets/fork/icon.png` | The iOS icon, 1024×1024, on an opaque white field |
+| `apps/mobile/assets/fork/icon-dark.png` | The iOS icon for the dark appearance: the lighter ramp on a transparent field, which iOS puts on its own dark tile |
+| `apps/mobile/assets/fork/splash-logo.png`, `splash-logo-dark.png` | The launch-splash marks, transparent, at the pixel scale of bb's own splash logo |
+| `fork/desktop/icon.png`, `fork/desktop/icon.icns` | The desktop icon, on a white rounded square like bb's, ready for the desktop build when the fork gets one. No build uses them yet. |
+
+The script uses the repository's `sharp`, from `apps/app`, and `iconutil` for the `.icns`, which is therefore only written on macOS.
+
+The colors are one hue, 40° in OKLCH, in five steps along the gradient:
+
+| Field | Steps, upper left to lower right |
+| --- | --- |
+| Light, on white | `#ed835e` `#dd5a27` `#b63e03` `#842b02` `#5e1d01` |
+| Dark, on black | `#feb79e` `#ff8d65` `#ed6531` `#cd4805` `#a43701` |
+
+The splash fields are bb's: white in the light appearance, black in the dark, and `#151515` on Android in the dark. The mark shows 97 points wide, which is bb's 88-point mark at the same scale, plus the descender. `with-fork-variant.js` sets the native splash, and the in-app overlay in `LaunchSplash.tsx` follows it.
 
 ## Credentials
 

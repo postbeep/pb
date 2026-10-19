@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import {
-  FORK_SPLASH_BACKGROUND,
   FORK_SPLASH_IMAGE,
+  FORK_SPLASH_IMAGE_DARK,
   FORK_SPLASH_LOGO_WIDTH,
 } from "./splash";
 
@@ -171,14 +171,20 @@ describe("fork app variant", () => {
     ]);
   });
 
-  it("uses its own opaque 1024x1024 icon", () => {
+  it("uses its own 1024x1024 icons: opaque light, transparent dark", () => {
     const production = resolveConfig(undefined);
     const fork = resolveConfig("fork");
-    expect(fork.ios.icon).toBe(fork.icon);
     expect(fork.icon).not.toBe(production.icon);
-    const { width, height, colorType } = readPngHeader(fork.icon);
-    expect({ width, height }).toEqual({ width: 1024, height: 1024 });
-    expect(COLOR_TYPES_WITH_ALPHA.has(colorType)).toBe(false);
+    expect(fork.ios.icon).toEqual({
+      light: fork.icon,
+      dark: "./assets/fork/icon-dark.png",
+    });
+    const light = readPngHeader(fork.icon);
+    expect(light).toMatchObject({ width: 1024, height: 1024 });
+    expect(COLOR_TYPES_WITH_ALPHA.has(light.colorType)).toBe(false);
+    const dark = readPngHeader("./assets/fork/icon-dark.png");
+    expect(dark).toMatchObject({ width: 1024, height: 1024 });
+    expect(COLOR_TYPES_WITH_ALPHA.has(dark.colorType)).toBe(true);
   });
 
   it("leaves the production and dev variants as upstream ships them", () => {
@@ -214,21 +220,14 @@ describe("fork app variant", () => {
   });
 
   it("puts the pb mark on the fork splash and leaves the stock splashes", () => {
-    const fork = splashPlugin("fork");
-    expect(fork).toMatchObject({
+    const production = splashPlugin("production");
+    expect(splashPlugin("fork")).toEqual({
+      ...production,
       image: FORK_SPLASH_IMAGE,
       imageWidth: FORK_SPLASH_LOGO_WIDTH,
-      backgroundColor: FORK_SPLASH_BACKGROUND,
-      dark: {
-        image: FORK_SPLASH_IMAGE,
-        backgroundColor: FORK_SPLASH_BACKGROUND,
-      },
-      android: {
-        backgroundColor: FORK_SPLASH_BACKGROUND,
-        dark: { backgroundColor: FORK_SPLASH_BACKGROUND },
-      },
+      dark: { ...production.dark, image: FORK_SPLASH_IMAGE_DARK },
     });
-    expect(splashPlugin("production")).toMatchObject({
+    expect(production).toMatchObject({
       image: "./assets/splash-logo.png",
       imageWidth: 88,
       backgroundColor: "#ffffff",

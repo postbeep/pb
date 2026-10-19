@@ -13,6 +13,7 @@ import splashLogo from "../../assets/splash-logo.png";
 import splashLogoDark from "../../assets/splash-logo-dark.png";
 import splashLogoDev from "../../assets/splash-logo-dev.png";
 import splashLogoFork from "../../assets/fork/splash-logo.png";
+import splashLogoForkDark from "../../assets/fork/splash-logo-dark.png";
 import { forkSplash } from "@/lib/fork/splash";
 
 const LAUNCH_SPLASH_MAX_MS = 8000;
@@ -32,7 +33,10 @@ const launchArt =
     : { background: "#ffffff", logo: isDevApp ? splashLogoDev : splashLogo };
 const splash =
   Constants.expoConfig?.extra?.bbMobileVariant === "fork"
-    ? forkSplash(splashLogoFork)
+    ? forkSplash(Appearance.getColorScheme(), Platform.OS, {
+        light: splashLogoFork,
+        dark: splashLogoForkDark,
+      })
     : { ...launchArt, width: LOGO_WIDTH, height: LOGO_HEIGHT };
 
 let revealed = false;
