@@ -157,7 +157,7 @@ function bounds() {
 }
 export const markBounds = bounds();
 
-function oklchToHex(L, C, h) {
+export function oklchToHex(L, C, h) {
   const rad = (h * Math.PI) / 180;
   const toRgb = (chroma) => {
     const a = chroma * Math.cos(rad);
@@ -187,8 +187,8 @@ function oklchToHex(L, C, h) {
   return `#${rgb.map(encode).join("")}`;
 }
 
-const HUE = 40;
-export const ramps = {
+export const palette = {
+  hue: 40,
   light: {
     back: [
       [0.72, 0.14],
@@ -212,17 +212,20 @@ export const ramps = {
 };
 const OFFSETS = [0, 0.28, 0.57, 0.82, 1];
 
-function stops(ramp, lift) {
+function stops(ramp, lift, hue) {
   return ramp
     .map(([L, C], i) => {
       const offset = i === 0 ? "" : ` offset="${OFFSETS[i]}"`;
-      return `<stop${offset} stop-color="${oklchToHex(L + lift, C, HUE)}"/>`;
+      return `<stop${offset} stop-color="${oklchToHex(L + lift, C, hue)}"/>`;
     })
     .join("\n      ");
 }
 
-export function markSvg(variant, { standalone = true } = {}) {
-  const ramp = ramps[variant];
+export function markSvg(
+  variant,
+  { standalone = true, palette: colors = palette } = {},
+) {
+  const ramp = colors[variant];
   const pad = 8;
   const { min, width, height } = markBounds;
   const viewBox = `${fmt(min[0] - pad)} ${fmt(min[1] - pad)} ${fmt(width + 2 * pad)} ${fmt(height + 2 * pad)}`;
@@ -265,10 +268,10 @@ export function markSvg(variant, { standalone = true } = {}) {
     <path id="lower-seam" d="M221.66 343.061C247.234 321.797 270.309 286.682 279.815 258.612"/>
 
     <linearGradient id="background-fill" x1="74" y1="18" x2="424" y2="377" gradientUnits="userSpaceOnUse">
-      ${stops(ramp.back, 0)}
+      ${stops(ramp.back, 0, colors.hue)}
     </linearGradient>
     <linearGradient id="foreground-fill" x1="74" y1="18" x2="424" y2="377" gradientUnits="userSpaceOnUse">
-      ${stops(ramp.back, ramp.lift)}
+      ${stops(ramp.back, ramp.lift, colors.hue)}
     </linearGradient>
     <linearGradient id="lower-fade" x1="8" y1="0" x2="118" y2="0" gradientUnits="userSpaceOnUse">
       <stop stop-color="#fff" stop-opacity="0"/>
@@ -484,10 +487,11 @@ async function main() {
   console.log(
     `mark ${fmt(width)} x ${fmt(height)} units; splash ${splashCanvas().join("x")} px`,
   );
-  for (const [variant, ramp] of Object.entries(ramps)) {
+  for (const variant of ["light", "dark"]) {
+    const ramp = palette[variant];
     console.log(
       variant,
-      ramp.back.map(([L, C]) => oklchToHex(L, C, HUE)).join(" "),
+      ramp.back.map(([L, C]) => oklchToHex(L, C, palette.hue)).join(" "),
     );
   }
 }
